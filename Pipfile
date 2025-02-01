@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+colorama = "*"
+pyreadline = "*"
+application-properties = ">=0.8.2"
+typing-extensions = ">=4.7.0"
+
+[dev-packages]
+coverage = "==7.6.1"
+importlib-metadata = "==8.5.0"
+pre-commit = "==3.5.0"
+project-summarizer = "==0.5.0"
+pylint = "==3.2.7"
+pylint-utils = "==0.5.1"
+pytest = "==7.4.0"
+pytest-console-scripts = "==1.4.1"
+pytest-cov = "==4.1.0"
+pytest-html = "==4.1.1"
+pytest-timeout = "==2.1.0"
+pytest-xdist = "==3.3.1"
+
+[requires]
+python_version = "3.8"
