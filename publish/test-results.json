@@ -1,0 +1,15 @@
+{
+    "projectName": "?",
+    "reportSource": "pytest",
+    "measurements": [
+        {
+            "name": "test.test_main_line",
+            "totalTests": 1,
+            "failedTests": 0,
+            "errorTests": 0,
+            "skippedTests": 0,
+            "elapsedTimeInMilliseconds": 0
+        }
+    ]
+}
+

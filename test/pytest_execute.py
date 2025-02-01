@@ -25,6 +25,9 @@ class InProcessResult:
 
     @staticmethod
     def make_value_visible(value_to_make_visible):
+        """
+        Make the given value visible by taking hidden characters and replacing them.
+        """
         return value_to_make_visible.replace("\n", "\\n").replace("\t", "\\t")
 
     # pylint: disable=too-many-arguments
@@ -252,7 +255,7 @@ class InProcessExecution(ABC):
             del trace_back
         return 1
 
-    # pylint: disable=broad-except, too-many-arguments
+    # pylint: disable=too-many-arguments, broad-exception-caught
     def invoke_main(
         self,
         arguments=None,
@@ -266,16 +269,7 @@ class InProcessExecution(ABC):
         """
         if suppress_first_line_heading_rule:
             new_arguments = arguments.copy() if arguments else []
-            if "--disable-rules" not in new_arguments:
-                new_arguments.insert(0, "--disable-rules")
-                new_arguments.insert(1, "md041")
-            else:
-                disable_index = new_arguments.index("--disable-rules")
-                disable_value = new_arguments[disable_index + 1]
-                if not disable_value.endswith(","):
-                    disable_value += ","
-                disable_value += "md041"
-                new_arguments[disable_index + 1] = disable_value
+            # Modify args
             arguments = new_arguments
 
         saved_state = SystemState()
@@ -310,4 +304,4 @@ class InProcessExecution(ABC):
 
         return InProcessResult(returncode, std_output, std_error)
 
-    # pylint: enable=broad-except, too-many-arguments
+    # pylint: enable=too-many-arguments, broad-exception-caught

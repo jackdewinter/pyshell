@@ -1,22 +1,27 @@
+"""
+Main module for the project
+"""
+
 import argparse
 import logging
 import os
 import runpy
-import shutil
 import sys
 import traceback
 from typing import List, Optional
 
 from application_properties import ApplicationProperties
-from colorama import Back, Fore, Style, init
 
 from pyshell.application_logging import ApplicationLogging
-from pyshell.command_processor import CommandProcessor
 
 LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=too-few-public-methods
 class PyShell:
+    """
+    Main class.
+    """
 
     def __init__(
         self,
@@ -135,7 +140,11 @@ class PyShell:
         if exit_on_error:
             sys.exit(1)
 
+    # pylint: disable=broad-exception-caught
     def main(self, direct_args: Optional[List[str]] = None) -> None:
+        """
+        Handle the main line.
+        """
         try:
             args = self.__initialize_subsystems(direct_args)
 
@@ -152,56 +161,7 @@ class PyShell:
                 self.__logging.terminate()
             self.__logging = None
 
-    def start(self):
+    # pylint: enable=broad-exception-caught
 
-        parser = argparse.ArgumentParser(description="Lint any found Markdown files.")
-        parser.add_argument(
-            "-c",
-            dest="c_mode",
-            action="store",
-            default="",
-        )  # bash: -c: option requires an argument
-        parser.add_argument("rest", nargs=argparse.REMAINDER)
 
-        parse_arguments = parser.parse_args()
-
-        if parse_arguments.c_mode:
-            x = str(parse_arguments)
-            print(x)
-            return CommandProcessor().collect_and_process_commands()
-        if parse_arguments.rest:
-            print("NIY")
-            return
-
-        print(parse_arguments)
-
-        init()
-
-        # print("\033[2J\033[;H")
-        print(Fore.RED + "some red text")
-        print(Back.GREEN + "and with a green background")
-        print(Style.DIM + "and in dim text")
-        print(Style.RESET_ALL)
-        print("back to normal now")
-
-        # where the first part makes the text red (31), bold (1), underlined (4) and the last part clears all this (0).
-        print("\033[31;1;4mHello\033[0m")
-        print("\033[38;2;255;82;82;48;2;82;82;255mHello\033[0m")
-
-        print("\u03B5")
-        print("sys.getdefaulencoding()=", sys.getdefaultencoding())
-        print("  \ue0b0  \ue0b0")
-
-        # am = AnsiMarkup()
-        # print(am.parse("<b><r>bold red</r></b>"))
-        # print(am.parse("<r>red</r>"))
-        # print(am.parse("<BLUE><red>bold red</red></BLUE>"))
-
-        print("Number of columns and Rows: " + str(os.get_terminal_size()))
-        print("Number of columns and Rows: " + str(shutil.get_terminal_size()))
-        d = shutil.which("where")
-        print("cmd=" + str(d))
-
-        print("os-->" + os.name)  # "nt"
-
-        return CommandProcessor().collect_and_process_commands()
+# pylint: enable=too-few-public-methods

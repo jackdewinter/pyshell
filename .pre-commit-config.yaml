@@ -76,7 +76,7 @@ repos:
     hooks:
     - id: mypy
       name: "Scan:   MyPy"
-      args: [--strict, pyshell, stubs]
+      args: [--strict, pyshell]
       additional_dependencies: [
           "application_properties==0.8.2",
           "types-pyyaml"

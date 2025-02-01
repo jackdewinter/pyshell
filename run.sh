@@ -111,10 +111,10 @@ if [[ ${PYMARKDOWNLINT__PERFRUN:-0} -ne 0 ]]; then
 	PYTHON_PERFORMANCE_ARGUMENTS=-OO
 fi
 
-if [[ -n ${VIRTUAL_ENV:-} ]] ; then
-    python ${PYTHON_PERFORMANCE_ARGUMENTS} "${SCRIPT_DIR}/main.py" "${PARAMS[@]}"
+if [[ -n ${VIRTUAL_ENV:-} ]]; then
+	python ${PYTHON_PERFORMANCE_ARGUMENTS} "${SCRIPT_DIR}/main.py" "${PARAMS[@]}"
 else
-    pipenv run python ${PYTHON_PERFORMANCE_ARGUMENTS} "${SCRIPT_DIR}/main.py" "${PARAMS[@]}"
+	pipenv run python ${PYTHON_PERFORMANCE_ARGUMENTS} "${SCRIPT_DIR}/main.py" "${PARAMS[@]}"
 fi
 EXIT_CODE=$?
 complete_process ${EXIT_CODE}

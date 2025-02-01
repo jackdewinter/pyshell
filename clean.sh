@@ -296,6 +296,12 @@ execute_pre_commit() {
 
 load_sourcery_configuration() {
 
+	local sourcery_config_file="${SCRIPT_DIR}"/.sourcery.yaml
+	if ! [[ -f ${sourcery_config_file} ]]; then
+		verbose_echo "{Sourcery configuration file note present. Skipping Sourcery analysis.}"
+		return 1
+	fi
+
 	echo ""
 	if [[ -z ${SOURCERY_USER_KEY:-} ]]; then
 		SOURCERY_BATCH_FILE_PATH=${SCRIPT_DIR}/../sourcery.bat
@@ -316,6 +322,7 @@ load_sourcery_configuration() {
 			complete_process 1 "{Variable 'SOURCERY_USER_KEY' is not defined and no sourceable script detected.}"
 		fi
 	fi
+	return 0
 }
 
 execute_sourcery() {
@@ -343,7 +350,7 @@ find_unused_pylint_suppressions() {
 	SCAN_FILES=()
 	git diff --name-only --staged >"${TEMP_FILE}"
 	while IFS= read -r line; do
-		if [[ ${line} == *.py ]] && [[ ${line} != "pytest_execute.py" ]]; then
+		if [[ ${line} == *.py ]] && [[ ${line} != "pytest_execute.py" ]] && [[ -f ${line} ]]; then
 			SCAN_FILES+=("${line}")
 		fi
 	done <"${TEMP_FILE}"
@@ -460,9 +467,9 @@ fi
 if [[ ${NO_SOURCERY_MODE} -ne 0 ]] || [[ ${PERFORMANCE_ONLY_MODE} -ne 0 ]]; then
 	echo "{Skipping Sourcery static analyzer by request.}"
 else
-	load_sourcery_configuration
-
-	execute_sourcery
+	if load_sourcery_configuration; then
+		execute_sourcery
+	fi
 
 	if [[ ${SOURCERY_ONLY_MODE} -ne 0 ]]; then
 		complete_process 0

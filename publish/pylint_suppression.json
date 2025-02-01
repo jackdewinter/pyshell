@@ -1,0 +1,16 @@
+{
+    "disables-by-file": {
+        "pyshell/__init__.py": {},
+        "pyshell/__main__.py": {},
+        "pyshell/application_logging.py": {},
+        "pyshell/main.py": {
+            "too-few-public-methods": 1,
+            "broad-exception-caught": 1
+        },
+        "pyshell/version.py": {}
+    },
+    "disables-by-name": {
+        "too-few-public-methods": 1,
+        "broad-exception-caught": 1
+    }
+}
