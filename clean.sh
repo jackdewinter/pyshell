@@ -4,10 +4,17 @@
 # http://redsymbol.net/articles/unofficial-bash-strict-mode/ without the fail fast.
 set -uo pipefail
 
+# set -x
+
 # Set up any project based local script variables.
 SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 TEMP_FILE=$(mktemp /tmp/"${SCRIPT_NAME}".XXXXXXXXX)
+
+if ! source "${SCRIPT_DIR}"/utils/common.sh; then
+	echo "bad"
+	exit 1
+fi
 
 SCRIPT_TITLE="Analyzing project cleanliness"
 
@@ -46,7 +53,11 @@ start_process() {
 		complete_process 1 "Script cannot save the current directory before proceeding."
 	fi
 
+	trap -p EXIT
+	echo $?
 	trap cleanup_function EXIT
+	trap -p EXIT
+	echo $?
 }
 
 # Simple function to stop the process with information about why it stopped.
@@ -178,23 +189,6 @@ parse_command_line() {
 	if [[ ${SOURCERY_ONLY_MODE} -ne 0 ]] && [[ ${MYPY_ONLY_MODE} -ne 0 ]] && [[ ${PERFORMANCE_ONLY_MODE} -ne 0 ]]; then
 		echo "Options '--perf-only', '-m|--mypy-only' and '-s,--sourcery-only' conflict with each other.  Please choose one and try again."
 		exit 1
-	fi
-}
-
-load_properties_from_file() {
-
-	verbose_echo "{Loading 'project.properties file'...}"
-	while IFS='=' read -r key_value; do
-		if [[ ${key_value} == \#* ]]; then
-			continue
-		fi
-		key=$(echo "${key_value}" | cut -d '=' -f1)
-		value=$(echo "${key_value}" | cut -d '=' -f2-)
-		export "${key}=${value}"
-	done <"${SCRIPT_DIR}/project.properties"
-
-	if [[ -z ${PYTHON_MODULE_NAME} ]]; then
-		complete_process 1 "Property 'PYTHON_MODULE_NAME' must be defined in the project.properties file."
 	fi
 }
 

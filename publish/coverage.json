@@ -2,12 +2,12 @@
     "projectName": "pyshell",
     "reportSource": "pytest",
     "branchLevel": {
-        "totalMeasured": 34,
-        "totalCovered": 3
+        "totalMeasured": 248,
+        "totalCovered": 245
     },
     "lineLevel": {
-        "totalMeasured": 162,
-        "totalCovered": 89
+        "totalMeasured": 697,
+        "totalCovered": 694
     }
 }
 

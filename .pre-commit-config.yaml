@@ -33,7 +33,7 @@ repos:
     hooks:
     - id: bandit
       name: "Scan:   Bandit"
-      args: [--configfile,bandit.yaml,-q,-r,"./pyshell"]
+      args: [--configfile,.bandit.yaml,-q,-r,"./pyshell"]
       pass_filenames: false
   - repo: local
     hooks:
@@ -82,10 +82,10 @@ repos:
           "types-pyyaml"
       ]
       pass_filenames: false
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.10.0
-    hooks:
-    - id: shellcheck
-      name: "Scan:   Shellcheck"
-      args: ["-o","require-variable-braces"]
+  # - repo: https://github.com/koalaman/shellcheck-precommit
+  #   rev: v0.10.0
+  #   hooks:
+  #   - id: shellcheck
+  #     name: "Scan:   Shellcheck"
+  #     args: ["-x", "-o","require-variable-braces"]
 

@@ -24,6 +24,7 @@ cleanup_function() {
 
 # Start the main part of the script off with a title.
 start_process() {
+
 	if ! pushd "${SCRIPT_DIR}" >"${TEMP_FILE}" 2>&1; then
 		cat "${TEMP_FILE}"
 		complete_process 1 "Script cannot save the current directory before proceeding."

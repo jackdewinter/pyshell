@@ -96,6 +96,13 @@ class InProcessResult:
         return self.__return_code
 
     @property
+    def returncode(self):
+        """
+        Return code provided after execution.
+        """
+        return self.__return_code
+
+    @property
     def std_out(self):
         """
         Standard output collected during execution.
@@ -103,7 +110,21 @@ class InProcessResult:
         return self.__std_out
 
     @property
+    def stdout(self):
+        """
+        Standard output collected during execution.
+        """
+        return self.__std_out
+
+    @property
     def std_err(self):
+        """
+        Standard error collected during execution.
+        """
+        return self.__std_err
+
+    @property
+    def stderr(self):
         """
         Standard error collected during execution.
         """

@@ -5,7 +5,7 @@ Module to provide for a simplified way to setup logging.
 import argparse
 import logging
 import sys
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from application_properties import ApplicationProperties
 
@@ -28,13 +28,6 @@ class ApplicationLogging:
         log_level_warning: logging.WARNING,
         log_level_info: logging.INFO,
         log_level_debug: logging.DEBUG,
-    }
-    __log_level_to_name_map = {
-        logging.CRITICAL: log_level_critical,
-        logging.ERROR: log_level_error,
-        logging.WARNING: log_level_warning,
-        logging.INFO: log_level_info,
-        logging.DEBUG: log_level_debug,
     }
 
     def __init__(
@@ -91,12 +84,15 @@ class ApplicationLogging:
 
         return effective_log_level, effective_log_file
 
-    def initialize(self, args: argparse.Namespace) -> None:
+    def initialize(self, args: Optional[argparse.Namespace]) -> None:
         """
         Initialize the logging for the application.
         """
 
         try:
+            effective_log_level = self.__default_log_level
+            effective_log_file = None
+            assert args is not None
             effective_log_level, effective_log_file = self.__calculate_effective_levels(
                 args
             )
@@ -117,8 +113,8 @@ class ApplicationLogging:
             ]
 
             logging.getLogger().setLevel(log_level_to_enact)
-        except ValueError:
-            raise
+        # except ValueError:
+        #     raise
         except Exception as this_exception:
             self.terminate()
             raise ApplicationLoggingException(
@@ -130,6 +126,7 @@ class ApplicationLogging:
         Terminate the logging for the application.
         """
         if self.__new_handler:
+            logging.getLogger().removeHandler(self.__new_handler)
             self.__new_handler.close()
             self.__new_handler = None
 
@@ -156,24 +153,6 @@ class ApplicationLogging:
         )
 
     @staticmethod
-    def get_valid_log_levels() -> List[str]:
-        """
-        Return a sorted list of the available log levels as strings.
-        """
-        return list(ApplicationLogging.__available_log_maps.keys())
-
-    @staticmethod
-    def is_valid_log_level_type(argument: str) -> bool:
-        """
-        Check to see if the supplied arguments is a valid log level.
-        """
-        try:
-            ApplicationLogging.validate_log_level_type(argument)
-            return True
-        except ValueError:
-            return False
-
-    @staticmethod
     def validate_log_level_type(argument: str) -> str:
         """
         Function to help argparse limit the valid log levels.
@@ -181,16 +160,6 @@ class ApplicationLogging:
         if argument in ApplicationLogging.__available_log_maps:
             return argument
         raise ValueError(f"Value '{argument}' is not a valid log level.")
-
-    @staticmethod
-    def translate_log_level(value: str) -> int:
-        """
-        Translate a log string, such as "DEBUG" into the logging system's
-        numeric values.
-        """
-        if value not in ApplicationLogging.__available_log_maps:
-            return logging.NOTSET
-        return ApplicationLogging.__available_log_maps[value]
 
 
 class ApplicationLoggingException(Exception):
