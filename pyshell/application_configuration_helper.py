@@ -118,8 +118,7 @@ class ApplicationConfigurationHelper:
         """
         configuration_file = (
             args.configuration_file
-            if args.configuration_file
-            else ApplicationConfigurationHelper.DEFAULT_CONFIGURATION_PATH
+            or ApplicationConfigurationHelper.DEFAULT_CONFIGURATION_PATH
         )
         LOGGER.info("Looking for configuration file: %s", configuration_file)
         configuration_file = FilePathHelpers.normalize_path(configuration_file)

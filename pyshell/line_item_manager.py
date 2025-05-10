@@ -34,14 +34,12 @@ class LineItemManager:
 
     def get_properties_required_for_items(self) -> List[PropertyPath]:
         """Get any properties that are required by the items being managed."""
-        required_properties = []
-        for next_line_item in self.__line_items:
-            if isinstance(next_line_item, PropertyItem):
-                required_properties.append(
-                    PropertyPath(
-                        next_line_item.data_source_name, next_line_item.data_item_name
-                    )
-                )
+        required_properties: List[PropertyPath] = []
+        required_properties.extend(
+            PropertyPath(next_line_item.data_source_name, next_line_item.data_item_name)
+            for next_line_item in self.__line_items
+            if isinstance(next_line_item, PropertyItem)
+        )
         return required_properties
 
     def from_properties(self, properties: ApplicationProperties) -> None:
@@ -50,13 +48,13 @@ class LineItemManager:
         found_items = OrderedDict()
         for next_property_name in properties.property_names_under("items"):
             split_property_name = next_property_name.split(".")
-            root_property_name = split_property_name[0] + "." + split_property_name[1]
+            root_property_name = f"{split_property_name[0]}.{split_property_name[1]}"
             if root_property_name not in found_items:
                 found_items[root_property_name] = ""
 
         for next_property_name in found_items.keys():
             property_type = properties.get_string_property(
-                next_property_name + ".type", is_required=True
+                f"{next_property_name}.type", is_required=True
             )
             line_item_type = self.__line_item_name_to_type_map.get(property_type, None)
             if line_item_type is not None:
@@ -71,7 +69,9 @@ class LineItemManager:
 
     def generate(self, values_cache: Dict[str, str]) -> str:
         """Generate the display line based on the Line Items and the value cache."""
-        line_segments = []
-        for next_line_item in self.__line_items:
-            line_segments.append(next_line_item.generate_line_segements(values_cache))
+        line_segments: List[str] = []
+        line_segments.extend(
+            next_line_item.generate_line_segements(values_cache)
+            for next_line_item in self.__line_items
+        )
         return "".join(line_segments)

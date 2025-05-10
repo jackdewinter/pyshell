@@ -2,5 +2,5 @@
 """
 
 
-class PyShellException(BaseException):
+class PyShellException(Exception):
     """Exception specifically for this module's issues."""

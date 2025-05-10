@@ -16,6 +16,7 @@ from pyshell.application_configuration_helper import ApplicationConfigurationHel
 from pyshell.application_logging import ApplicationLogging
 from pyshell.data_source_manager import DataSourceManager
 from pyshell.line_item_manager import LineItemManager
+from pyshell.pyshell_exception import PyShellException
 
 LOGGER = logging.getLogger(__name__)
 
@@ -129,7 +130,6 @@ class PyShell:
                 formatted_error, thrown_error, exit_on_error, print_prefix
             )
 
-    # pylint: disable=broad-exception-raised
     def __initialize_subsystems(
         self, direct_args: Optional[List[str]]
     ) -> argparse.Namespace:
@@ -150,10 +150,9 @@ class PyShell:
         LOGGER.info("Subsystems setup completed.")
 
         if args.x_test_exception:
-            raise Exception("Test exception.")
+            raise PyShellException("Test exception.")
 
         return args
-        # pylint: enable=broad-exception-raised
 
     def __handle_error(
         self,
@@ -230,29 +229,3 @@ class PyShell:
 
 
 # pylint: enable=too-few-public-methods, too-many-instance-attributes
-
-# TODO test_mainline_log_file_bad for unix
-
-# TODO way to get at last command return code
-
-# TODO should config pyshell.cfg try all, but pyshell.json only try JSON?
-# TODO way to display prefix + suffix (only those) if value is present
-# TODO way to display prefix + suffix (only those) if value is equal to X
-# TODO way to display prefix + suffix (only those) if value is not equal to X
-# TODO disable built in data sources
-# TODO handle various column widths
-# TODO more logging messages in main areas
-# TODO add "datetime" and format field and way to pass similar property configuration
-# TODO make 'init' command work for windows
-# TODO make 'init' command work generally i.e. init gitbash
-# TODO way to initialize the command line easily
-# TODO add color to line items
-# TODO provide ability to translate windows paths to linux paths, switchable
-# TODO add "location" to line items , left, right, title
-# TODO filters? i.e. way to shorten long file paths
-# TODO plugins for data sources
-
-# TODO template application_configuration_helper and move to application_properties
-# TODO logging subsystem
-# TODO testing functionality to own package
-# TODO template mainline using subcommand objects for subparsers/subcommands

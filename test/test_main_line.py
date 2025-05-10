@@ -271,7 +271,7 @@ def test_mainline_stack_trace() -> None:
     arguments_to_use = ["--stack-trace", "-x-exception", "init"]
 
     expected_output = ""
-    expected_error = """Unexpected Error(Exception): Test exception."""
+    expected_error = """Unexpected Error(PyShellException): Test exception."""
     expected_additional_error = [
         "Exception: Test exception.",
         "Traceback (most recent call last):",

@@ -94,10 +94,9 @@ class PropertyComposer:
             self.__registered_properties,
             key=lambda x: (x.priority_level.value, x.property_path.full_name),
         )
-        x = []
-        for i in sorted_data:
-            x.append(i.property_path)
-        return x
+        property_list: List[PropertyPath] = []
+        property_list.extend(i.property_path for i in sorted_data)
+        return property_list
 
 
 all_property_resolvers = {}
@@ -140,7 +139,7 @@ class RegisteringType(type):
         name: str,
         bases: "BaseDataSource",
         attrs: Dict[str, "BaseDataSource"],
-    ) -> None:
+    ) -> None:  # sourcery skip: instance-method-first-arg-name
         for key, val in attrs.items():
             resolver_function = getattr(val, "_register", None)
             if resolver_function is not None:
@@ -175,8 +174,10 @@ class BaseDataSource(metaclass=RegisteringType):
         """Name associated with the data source."""
         return self.__name
 
-    def __resolve_registered_properties(child_instance: "BaseDataSource") -> None:
-        child_class_prefix = child_instance.__class__.__name__ + "."
+    def __resolve_registered_properties(
+        child_instance: "BaseDataSource",
+    ) -> None:  # sourcery skip: instance-method-first-arg-name
+        child_class_prefix = f"{child_instance.__class__.__name__}."
         for (
             full_function_name,
             property_name_function_pair,
@@ -198,9 +199,7 @@ class BaseDataSource(metaclass=RegisteringType):
         """Get the property dependencies from the data source that is associated with the given property name."""
         _ = property_name
         selected_composer = self.__property_composers.get(property_name, None)
-        if selected_composer:
-            return selected_composer.registered_properties
-        return []
+        return selected_composer.registered_properties if selected_composer else []
 
     def register_dynamic_dependency(  # noqa: B027
         self,
@@ -209,16 +208,13 @@ class BaseDataSource(metaclass=RegisteringType):
         priority_level: ComposerPriorityLevel,
     ) -> None:
         """Regsiter a property name and the dynamic dependency to another data source's property."""
-        selected_composer = self.__property_composers.get(property_name, None)
-        if selected_composer:
+        if selected_composer := self.__property_composers.get(property_name, None):
             selected_composer.add_dependency(property_path, priority_level)
         return
 
     def _resolve_property(self, property_name: str) -> Optional[str]:
         property_resolver_function = self.__property_resolvers.get(property_name, None)
-        if property_resolver_function:
-            return property_resolver_function(self)
-        return None
+        return property_resolver_function(self) if property_resolver_function else None
 
     def _execute_subprocess(
         self,
@@ -228,8 +224,7 @@ class BaseDataSource(metaclass=RegisteringType):
     ) -> subprocess.CompletedProcess[str]:
         """Function to execute a shell process to return more information."""
 
-        # fg = datetime.datetime.now().timestamp()
-        exec_result = subprocess.run(  # nosec subprocess_without_shell_equals_true
+        return subprocess.run(  # nosec subprocess_without_shell_equals_true
             subprocess_args,
             text=True,
             shell=use_shell,  # nosec subprocess_popen_with_shell_equals_true
@@ -237,6 +232,3 @@ class BaseDataSource(metaclass=RegisteringType):
             stderr=subprocess.PIPE,
             check=check_for_success,
         )
-        # fg_delta = datetime.datetime.now().timestamp() - fg
-        # print(fg_delta)
-        return exec_result

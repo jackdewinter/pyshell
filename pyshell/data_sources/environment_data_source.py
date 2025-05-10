@@ -12,5 +12,4 @@ class EnvironmentDataSource(BaseDataSource):
     def get_property(self, property_name: str) -> str:
         """Get the property from the data source that is associated with the given property name."""
 
-        env_value = os.environ[property_name]
-        return env_value
+        return os.environ[property_name]

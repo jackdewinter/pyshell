@@ -292,7 +292,7 @@ load_sourcery_configuration() {
 
 	local sourcery_config_file="${SCRIPT_DIR}"/.sourcery.yaml
 	if ! [[ -f ${sourcery_config_file} ]]; then
-		verbose_echo "{Sourcery configuration file note present. Skipping Sourcery analysis.}"
+		verbose_echo "{Sourcery configuration file not present. Skipping Sourcery analysis.}"
 		return 1
 	fi
 
@@ -328,12 +328,12 @@ execute_sourcery() {
 
 	if [[ ${PUBLISH_MODE} -ne 0 ]]; then
 		verbose_echo "{  Executing Sourcery against full project contents.}"
-		if ! pipenv run sourcery review --check pymarkdown; then
+		if ! pipenv run sourcery review --check pyshell; then
 			complete_process 1 "{Executing Sourcery on Python code failed.}"
 		fi
 	else
 		verbose_echo "{  Executing Sourcery against changed project contents.}"
-		if ! pipenv run sourcery review --check pymarkdown --diff "git diff"; then
+		if ! pipenv run sourcery review --check pyshell --diff "git diff"; then
 			complete_process 1 "{Executing Sourcery on Python code failed.}"
 		fi
 	fi

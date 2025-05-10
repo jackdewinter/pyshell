@@ -80,7 +80,7 @@ class PropertyItem(LineItem):
             )
             or ""
         )
-        display_modifier_text = (
+        if display_modifier_text := (
             LineItem._get_component(
                 properties,
                 all_properties_under_prefix,
@@ -89,14 +89,13 @@ class PropertyItem(LineItem):
                 is_required=False,
             )
             or ""
-        )
-        if display_modifier_text:
+        ):
             try:
                 display_modifier = ItemDisplayModifier[display_modifier_text.upper()]
-            except KeyError:
+            except KeyError as this_exception:
                 raise ValueError(
                     f"Property '{property_prefix}.display_modifier' cannot be assigned the value '{display_modifier_text.upper()}'."
-                )
+                ) from this_exception
         else:
             display_modifier = ItemDisplayModifier.ALWAYS
 

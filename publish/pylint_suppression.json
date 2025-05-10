@@ -12,9 +12,7 @@
         "pyshell/data_sources/git_data_source.py": {},
         "pyshell/data_sources/project_data_source.py": {},
         "pyshell/data_sources/system_data_source.py": {},
-        "pyshell/file_path_helpers.py": {
-            "too-few-public-methods": 1
-        },
+        "pyshell/file_path_helpers.py": {},
         "pyshell/line_item_manager.py": {},
         "pyshell/line_items/line_item.py": {},
         "pyshell/line_items/property_item.py": {},
@@ -22,16 +20,14 @@
         "pyshell/main.py": {
             "too-few-public-methods": 1,
             "too-many-instance-attributes": 1,
-            "broad-exception-raised": 1,
             "broad-exception-caught": 1
         },
         "pyshell/pyshell_exception.py": {},
         "pyshell/version.py": {}
     },
     "disables-by-name": {
-        "too-few-public-methods": 3,
+        "too-few-public-methods": 2,
         "too-many-instance-attributes": 1,
-        "broad-exception-raised": 1,
         "broad-exception-caught": 1
     }
 }

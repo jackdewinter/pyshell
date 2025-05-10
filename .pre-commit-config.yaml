@@ -14,13 +14,13 @@ repos:
     hooks:
       - id: shfmt
         name: "Format: ShFmt"
-  # - repo: local
-  #   hooks:
-  #     - id: verify-install-requirements
-  #       name: "Scan:   Verify Install Requirements Match"
-  #       language: system
-  #       entry: pipenv run python utils/verify_install_requirements.py
-  #       pass_filenames: false
+  - repo: local
+    hooks:
+      - id: verify-install-requirements
+        name: "Scan:   Verify Install Requirements Match"
+        language: system
+        entry: pipenv run python utils/verify_install_requirements.py
+        pass_filenames: false
   - repo: https://github.com/pycqa/flake8
     rev: '7.1.1'
     hooks:

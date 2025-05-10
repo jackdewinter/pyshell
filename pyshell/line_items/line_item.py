@@ -57,7 +57,7 @@ class LineItem(ABC):
     def _get_components_start(
         properties: ApplicationProperties, property_prefix: str, expected_type: str
     ) -> None:
-        type_name = property_prefix + ".type"
+        type_name = f"{property_prefix}.type"
         item_type = properties.get_string_property(type_name, is_required=True)
         if item_type != expected_type:
             raise ValueError(
@@ -68,7 +68,7 @@ class LineItem(ABC):
     def _get_components_done(
         all_properties_under_prefix: List[str], property_prefix: str
     ) -> None:
-        type_index = all_properties_under_prefix.index(property_prefix + "." + "type")
+        type_index = all_properties_under_prefix.index(f"{property_prefix}.type")
         del all_properties_under_prefix[type_index]
         if all_properties_under_prefix:
             raise ValueError(

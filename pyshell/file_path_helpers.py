@@ -7,8 +7,6 @@ import subprocess  # nosec blacklist
 from dataclasses import dataclass
 from typing import List
 
-# pylint: disable=too-few-public-methods
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -39,27 +37,34 @@ class FilePathHelpers:
             absolute_path = absolute_path[0].upper() + absolute_path[1:]
 
         if change_to_posix and os.name.lower() == "nt":
-            if FilePathHelpers.__MOUNT_RETURN_CODE < 0:
-                FilePathHelpers.__load_mount_points()
-            if FilePathHelpers.__MOUNT_RETURN_CODE == 0:
-                best_mopunt_path = ""
-                best_mount_name = ""
-                for next_mount_name_path_pair in FilePathHelpers.__MOUNTED_DIRECTORIES:
-                    adjusted_path = next_mount_name_path_pair.mounth_path + "\\"
-                    if absolute_path.startswith(adjusted_path) and len(
-                        adjusted_path
-                    ) > len(best_mopunt_path):
-                        best_mopunt_path = adjusted_path
-                        best_mount_name = (
-                            next_mount_name_path_pair.mount_name + "/"
-                            if not next_mount_name_path_pair.mount_name.endswith("/")
-                            else next_mount_name_path_pair.mount_name
-                        )
-                if best_mount_name:
-                    absolute_path = best_mount_name + absolute_path[
-                        len(best_mopunt_path) :
-                    ].replace("\\", "/")
+            absolute_path = FilePathHelpers.__change_windows_path_to_posix(
+                absolute_path
+            )
 
+        return absolute_path
+
+    @staticmethod
+    def __change_windows_path_to_posix(absolute_path: str) -> str:
+        if FilePathHelpers.__MOUNT_RETURN_CODE < 0:
+            FilePathHelpers.__load_mount_points()
+        if FilePathHelpers.__MOUNT_RETURN_CODE == 0:
+            best_mopunt_path = ""
+            best_mount_name = ""
+            for next_mount_name_path_pair in FilePathHelpers.__MOUNTED_DIRECTORIES:
+                adjusted_path = next_mount_name_path_pair.mounth_path + "\\"
+                if absolute_path.startswith(adjusted_path) and len(adjusted_path) > len(
+                    best_mopunt_path
+                ):
+                    best_mopunt_path = adjusted_path
+                    best_mount_name = (
+                        next_mount_name_path_pair.mount_name
+                        if next_mount_name_path_pair.mount_name.endswith("/")
+                        else f"{next_mount_name_path_pair.mount_name}/"
+                    )
+            if best_mount_name:
+                absolute_path = best_mount_name + absolute_path[
+                    len(best_mopunt_path) :
+                ].replace("\\", "/")
         return absolute_path
 
     @staticmethod
@@ -91,45 +96,47 @@ class FilePathHelpers:
                 "Unable to use 'df -a' to access mount information: %d",
                 FilePathHelpers.__MOUNT_RETURN_CODE,
             )
-            LOGGER.warning("STDOUT: %s", cp.stdout if cp.stdout else "")
-            LOGGER.warning("STDERR: %s", cp.stderr if cp.stderr else "")
+            LOGGER.warning("STDOUT: %s", cp.stdout or "")
+            LOGGER.warning("STDERR: %s", cp.stderr or "")
         else:
-            new_mount_list = []
-            for split_line in cp.stdout.split("\n"):
-                if not (
-                    split_line
-                    and (
-                        (split_line[0] >= "a" and split_line[1] <= "z")
-                        or (split_line[0] >= "A" and split_line[1] <= "Z")
-                    )
-                ):
-                    continue
-                line_split_by_spaces = split_line.split(" ")
-                line_split_index = len(line_split_by_spaces) - 1
-                while not line_split_by_spaces[line_split_index].startswith("/"):
-                    line_split_index -= 1
-                mount_prefix = " ".join(line_split_by_spaces[line_split_index:])
-                line_split_index -= 1
-                assert (
-                    line_split_by_spaces[line_split_index].endswith("%")
-                    or line_split_by_spaces[line_split_index] == "-"
-                )
-                line_split_index -= 1
-                for _ in range(3):
-                    while line_split_by_spaces[line_split_index] == "":
-                        line_split_index -= 1
-                    line_split_index -= 1
-                while line_split_by_spaces[line_split_index] == "":
-                    line_split_index -= 1
-                new_mount_list.append(
-                    FilePathHelpers.MountNamePathPair(
-                        mount_prefix,
-                        (
-                            " ".join(line_split_by_spaces[0 : line_split_index + 1])
-                        ).replace("/", "\\"),
-                    )
-                )
+            new_mount_list = FilePathHelpers.__parse_df_output(cp.stdout)
             FilePathHelpers.__MOUNTED_DIRECTORIES.extend(new_mount_list)
 
-
-# pylint: enable=too-few-public-methods
+    @staticmethod
+    def __parse_df_output(cp_stdout: str) -> List[MountNamePathPair]:
+        new_mount_list = []
+        for split_line in cp_stdout.split("\n"):
+            if not (
+                split_line
+                and (
+                    (split_line[0] >= "a" and split_line[1] <= "z")
+                    or (split_line[0] >= "A" and split_line[1] <= "Z")
+                )
+            ):
+                continue
+            line_split_by_spaces = split_line.split(" ")
+            line_split_index = len(line_split_by_spaces) - 1
+            while not line_split_by_spaces[line_split_index].startswith("/"):
+                line_split_index -= 1
+            mount_prefix = " ".join(line_split_by_spaces[line_split_index:])
+            line_split_index -= 1
+            assert (
+                line_split_by_spaces[line_split_index].endswith("%")
+                or line_split_by_spaces[line_split_index] == "-"
+            )
+            line_split_index -= 1
+            for _ in range(3):
+                while line_split_by_spaces[line_split_index] == "":
+                    line_split_index -= 1
+                line_split_index -= 1
+            while line_split_by_spaces[line_split_index] == "":
+                line_split_index -= 1
+            new_mount_list.append(
+                FilePathHelpers.MountNamePathPair(
+                    mount_prefix,
+                    " ".join(line_split_by_spaces[: line_split_index + 1]).replace(
+                        "/", "\\"
+                    ),
+                )
+            )
+        return new_mount_list
