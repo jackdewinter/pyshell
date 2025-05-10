@@ -42,21 +42,31 @@ class FilePathHelpers:
             if FilePathHelpers.__MOUNT_RETURN_CODE < 0:
                 FilePathHelpers.__load_mount_points()
             if FilePathHelpers.__MOUNT_RETURN_CODE == 0:
-                x1 = ""
-                x2 = ""
-                for xxx in FilePathHelpers.__MOUNTED_DIRECTORIES:
-                    ff = xxx.mounth_path + "\\"
-                    if absolute_path.startswith(ff) and len(ff) > len(x1):
-                        x1 = ff
-                        x2 = (
-                            xxx.mount_name + "/"
-                            if not xxx.mount_name.endswith("/")
-                            else xxx.mount_name
+                best_mopunt_path = ""
+                best_mount_name = ""
+                for next_mount_name_path_pair in FilePathHelpers.__MOUNTED_DIRECTORIES:
+                    adjusted_path = next_mount_name_path_pair.mounth_path + "\\"
+                    if absolute_path.startswith(adjusted_path) and len(
+                        adjusted_path
+                    ) > len(best_mopunt_path):
+                        best_mopunt_path = adjusted_path
+                        best_mount_name = (
+                            next_mount_name_path_pair.mount_name + "/"
+                            if not next_mount_name_path_pair.mount_name.endswith("/")
+                            else next_mount_name_path_pair.mount_name
                         )
-                if x2:
-                    absolute_path = x2 + absolute_path[len(x1) :].replace("\\", "/")
+                if best_mount_name:
+                    absolute_path = best_mount_name + absolute_path[
+                        len(best_mopunt_path) :
+                    ].replace("\\", "/")
 
         return absolute_path
+
+    @staticmethod
+    def clear_mount_points() -> None:
+        """Clear the mount points. Note that this should only be used for testing and is not thread safe."""
+        FilePathHelpers.__MOUNTED_DIRECTORIES.clear()
+        FilePathHelpers.__MOUNT_RETURN_CODE = -1
 
     @staticmethod
     def __load_mount_points() -> None:
@@ -64,7 +74,7 @@ class FilePathHelpers:
         # Filesystem                        1K-blocks     Used Available Use% Mounted on
         # C:/Program Files/Git              997702652 88940028 908762624   9% /
         # C:/Program Files/Git/usr/bin              -        -         -    - /bin
-        # C:/Users/jackd/AppData/Local/Temp         -        -         -    - /tmp
+        # C:/Users/brmay/AppData/Local/Temp         -        -         -    - /tmp
         # C:                                        -        -         -    - /c
 
         cp = subprocess.run(  # nosec start_process_with_partial_path
@@ -84,38 +94,42 @@ class FilePathHelpers:
             LOGGER.warning("STDOUT: %s", cp.stdout if cp.stdout else "")
             LOGGER.warning("STDERR: %s", cp.stderr if cp.stderr else "")
         else:
-            ert = []
-            fx = cp.stdout.split("\n")
-            for file_path in fx:
+            new_mount_list = []
+            for split_line in cp.stdout.split("\n"):
                 if not (
-                    file_path
+                    split_line
                     and (
-                        (file_path[0] >= "a" and file_path[1] <= "z")
-                        or (file_path[0] >= "A" and file_path[1] <= "Z")
+                        (split_line[0] >= "a" and split_line[1] <= "z")
+                        or (split_line[0] >= "A" and split_line[1] <= "Z")
                     )
                 ):
                     continue
-                fy = file_path.split(" ")
-                fz = len(fy) - 1
-                while not fy[fz].startswith("/"):
-                    fz -= 1
-                mount_prefix = " ".join(fy[fz:])
-                fz -= 1
-                assert fy[fz].endswith("%") or fy[fz] == "-"
-                fz -= 1
+                line_split_by_spaces = split_line.split(" ")
+                line_split_index = len(line_split_by_spaces) - 1
+                while not line_split_by_spaces[line_split_index].startswith("/"):
+                    line_split_index -= 1
+                mount_prefix = " ".join(line_split_by_spaces[line_split_index:])
+                line_split_index -= 1
+                assert (
+                    line_split_by_spaces[line_split_index].endswith("%")
+                    or line_split_by_spaces[line_split_index] == "-"
+                )
+                line_split_index -= 1
                 for _ in range(3):
-                    while fy[fz] == "":
-                        fz -= 1
-                    fz -= 1
-                while fy[fz] == "":
-                    fz -= 1
-                fff = " ".join(fy[0 : fz + 1])
-                ert.append(
+                    while line_split_by_spaces[line_split_index] == "":
+                        line_split_index -= 1
+                    line_split_index -= 1
+                while line_split_by_spaces[line_split_index] == "":
+                    line_split_index -= 1
+                new_mount_list.append(
                     FilePathHelpers.MountNamePathPair(
-                        mount_prefix, fff.replace("/", "\\")
+                        mount_prefix,
+                        (
+                            " ".join(line_split_by_spaces[0 : line_split_index + 1])
+                        ).replace("/", "\\"),
                     )
                 )
-            FilePathHelpers.__MOUNTED_DIRECTORIES.extend(ert)
+            FilePathHelpers.__MOUNTED_DIRECTORIES.extend(new_mount_list)
 
 
 # pylint: enable=too-few-public-methods

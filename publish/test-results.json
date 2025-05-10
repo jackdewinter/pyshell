@@ -20,7 +20,7 @@
         },
         {
             "name": "test.test_file_path_helpers",
-            "totalTests": 8,
+            "totalTests": 11,
             "failedTests": 0,
             "errorTests": 0,
             "skippedTests": 0,

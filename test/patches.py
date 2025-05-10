@@ -8,6 +8,7 @@ import subprocess
 from contextlib import contextmanager
 from datetime import datetime
 from test.pytest_execute import InProcessResult, SystemState
+from threading import Lock
 from typing import List
 
 import pytest
@@ -79,7 +80,7 @@ def mock_subprocess_run_git_branch_impl(monkeypatch):
 
 @pytest.fixture(name="mock_subprocess_run_df")
 def mock_subprocess_run_df_impl(monkeypatch):
-    """Mock for ..."""
+    """Mock for running df as part of the tests and returning a known set of values."""
 
     def mock_return(cargs: List[str], *args, **kwargs):
 
@@ -100,6 +101,29 @@ C:                                        -        -         -    - /c
         std_output = out_text if "text" in kwargs else io.StringIO(out_text)
         std_error = out_error if "text" in kwargs else io.StringIO(out_error)
         return InProcessResult(0, std_output, std_error)
+
+    monkeypatch.setattr(subprocess, "run", mock_return)
+
+
+@pytest.fixture(name="mock_subprocess_run_df_error")
+def mock_subprocess_run_df_error_impl(monkeypatch):
+    """Mock for running df as part of the tests and returning a known set of values."""
+
+    def mock_return(cargs: List[str], *args, **kwargs):
+
+        _ = args
+        if cargs[0] == "df" and cargs[1] == "-a":
+            out_text = ""
+            out_error = "Some error message"
+            error_code = 1
+        else:
+            out_text = ""
+            out_error = ""
+            error_code = 0
+
+        std_output = out_text if "text" in kwargs else io.StringIO(out_text)
+        std_error = out_error if "text" in kwargs else io.StringIO(out_error)
+        return InProcessResult(error_code, std_output, std_error)
 
     monkeypatch.setattr(subprocess, "run", mock_return)
 
@@ -180,3 +204,17 @@ def set_environment_simulating_user_name(user_name: str):
     finally:
         saved_state.restore()
         os.environ[user_env_var_name] = previous_value
+
+
+__file_path_helpers_singleton_lock = Lock()
+
+
+@contextmanager
+def lock_and_clear_file_path_helpers_singleton():
+    """Provide for a context manager that locks the FilePathHelpers singleton."""
+    with __file_path_helpers_singleton_lock:
+        try:
+            FilePathHelpers.clear_mount_points()
+            yield
+        finally:
+            pass

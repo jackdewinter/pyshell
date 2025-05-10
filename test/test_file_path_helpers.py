@@ -5,7 +5,12 @@ for testing that will work on Linux and Windows systems.
 """
 
 # pylint: disable=unused-import
-from test.patches import mock_abspath_impl, mock_subprocess_run_df_impl  # noqa: F401
+from test.patches import (  # noqa: F401
+    lock_and_clear_file_path_helpers_singleton,
+    mock_abspath_impl,
+    mock_subprocess_run_df_error_impl,
+    mock_subprocess_run_df_impl,
+)
 
 from pyshell.file_path_helpers import FilePathHelpers
 
@@ -85,9 +90,10 @@ def test_normalize_path_windows_mounts_normal(
     expected_file_path = "/c/fred/barney"
 
     # Act
-    normalized_path = FilePathHelpers.normalize_path(
-        windows_file_path, change_to_posix=True
-    )
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
 
     # Assert
     assert expected_file_path == normalized_path
@@ -106,9 +112,10 @@ def test_normalize_path_windows_mounts_longest(
     expected_file_path = "/tmp/fred/barney"
 
     # Act
-    normalized_path = FilePathHelpers.normalize_path(
-        windows_file_path, change_to_posix=True
-    )
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
 
     # Assert
     assert expected_file_path == normalized_path
@@ -127,9 +134,10 @@ def test_normalize_path_windows_mounts_space_in_path(
     expected_file_path = "/usr"
 
     # Act
-    normalized_path = FilePathHelpers.normalize_path(
-        windows_file_path, change_to_posix=True
-    )
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
 
     # Assert
     assert expected_file_path == normalized_path
@@ -148,9 +156,75 @@ def test_normalize_path_windows_mounts_space_in_mount(
     expected_file_path = "/my enlistments/pyshell"
 
     # Act
-    normalized_path = FilePathHelpers.normalize_path(
-        windows_file_path, change_to_posix=True
-    )
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
+
+    # Assert
+    assert expected_file_path == normalized_path
+
+
+def test_normalize_path_windows_mounts_bad_retcode(
+    mock_abspath, mock_subprocess_run_df_error
+) -> None:
+    """Test to verify that getting a bad return code from df when trying to determine the
+    mount points will not cause an error."""
+
+    # Arrange
+    _ = mock_abspath, mock_subprocess_run_df_error
+    windows_file_path = "C:\\enlistments\\pyshell"
+    expected_file_path = "C:\\enlistments\\pyshell"
+
+    # Act
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
+
+    # Assert
+    assert expected_file_path == normalized_path
+
+
+def test_normalize_path_windows_mounts_returns_same_results_over_multiple_calls(
+    mock_abspath, mock_subprocess_run_df
+) -> None:
+    """Test to verify that the same path will return the same results over multiple calls."""
+
+    # Arrange
+    _ = mock_abspath, mock_subprocess_run_df
+    windows_file_path = "C:\\enlistments\\pyshell"
+    expected_file_path = "/my enlistments/pyshell"
+
+    # Act
+    # Assert
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
+        assert expected_file_path == normalized_path
+
+        normalized_path2 = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
+        assert expected_file_path == normalized_path2
+
+
+def test_normalize_path_windows_mounts_only_replaces_if_mounted(
+    mock_abspath, mock_subprocess_run_df
+) -> None:
+    """Test to verify that specific mount points are only replaced if they are mounted."""
+
+    # Arrange
+    _ = mock_abspath, mock_subprocess_run_df
+    windows_file_path = "F:\\enlistments\\pyshell"
+    expected_file_path = "F:\\enlistments\\pyshell"
+
+    # Act
+    with lock_and_clear_file_path_helpers_singleton():
+        normalized_path = FilePathHelpers.normalize_path(
+            windows_file_path, change_to_posix=True
+        )
 
     # Assert
     assert expected_file_path == normalized_path
